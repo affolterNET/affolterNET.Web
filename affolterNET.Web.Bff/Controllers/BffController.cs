@@ -35,17 +35,20 @@ public class BffController(IBffSessionService sessionService) : ControllerBase
     [HttpGet("logout")]
     [Authorize]
     [IgnoreAntiforgeryToken]
-    public async Task<IActionResult> LogoutGet()
+    public async Task<IActionResult> LogoutGet([FromQuery] string? returnUrl = "/")
     {
+        if (string.IsNullOrEmpty(returnUrl) || !Url.IsLocalUrl(returnUrl))
+            returnUrl = "/";
+
         // First revoke tokens
         await sessionService.RevokeTokensAsync(HttpContext);
-        
+
         // Clear local authentication cookies first
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        
+
         // Then sign out of OIDC (Keycloak)
         return SignOut(
-            new AuthenticationProperties { RedirectUri = "/" },
+            new AuthenticationProperties { RedirectUri = returnUrl },
             OpenIdConnectDefaults.AuthenticationScheme);
     }
 
