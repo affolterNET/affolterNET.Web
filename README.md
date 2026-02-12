@@ -1,6 +1,6 @@
 # affolterNET.Web - Authentication & Authorization Libraries
 
-[![Build and Publish NuGet Packages](https://github.com/Mcafee123/affolterNET.Web/actions/workflows/nuget-packages.yml/badge.svg)](https://github.com/Mcafee123/affolterNET.Web/actions/workflows/nuget-packages.yml)
+[![Build and Publish NuGet Packages](https://github.com/affolterNET/affolterNET.Web/actions/workflows/nuget-packages.yml/badge.svg)](https://github.com/affolterNET/affolterNET.Web/actions/workflows/nuget-packages.yml)
 
 This library collection provides flexible authentication and authorization modes for ASP.NET Core applications with YARP reverse proxy integration.
 
@@ -33,7 +33,7 @@ This library includes Claude Code plugins for AI-assisted configuration. The plu
 
 ```bash
 # Add the marketplace
-/plugin marketplace add https://github.com/Mcafee123/affolterNET.Web
+/plugin marketplace add https://github.com/affolterNET/affolterNET.Web
 
 # Install for BFF applications
 /plugin install affolternet-web-bff@affolterNET.Web

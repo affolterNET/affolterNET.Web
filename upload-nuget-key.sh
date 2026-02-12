@@ -5,7 +5,7 @@
 set -e
 
 SECRET_NAME="NUGET_API_KEY"
-REPO="Mcafee123/affolterNET.Web"
+REPO="affolterNET/affolterNET.Web"
 
 if ! command -v gh &> /dev/null; then
     echo "GitHub CLI (gh) not found. Please install it: https://cli.github.com/"

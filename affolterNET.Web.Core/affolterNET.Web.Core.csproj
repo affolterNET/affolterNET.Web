@@ -7,18 +7,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>affolterNET.Web.Core</PackageId>
-    <Version>0.4.6</Version>
+    <Version>0.4.7</Version>
     <Authors>affolterNET</Authors>
     <Description>Core authentication and authorization components for web applications</Description>
     
     <!-- NuGet Package Metadata -->
-    <PackageProjectUrl>https://github.com/Mcafee123/affolterNET.Web</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Mcafee123/affolterNET.Web.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/affolterNET/affolterNET.Web</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/affolterNET/affolterNET.Web.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>authentication;authorization;asp.net-core;yarp;keycloak;oidc;bff</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>See https://github.com/Mcafee123/affolterNET.Web/commits for recent changes.</PackageReleaseNotes>
+    <PackageReleaseNotes>See https://github.com/affolterNET/affolterNET.Web/commits for recent changes.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
