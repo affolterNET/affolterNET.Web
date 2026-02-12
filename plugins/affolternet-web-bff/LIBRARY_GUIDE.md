@@ -173,7 +173,9 @@ if (response.status === 401) {
       },
       "SecurityHeaders": {
         "EnableHsts": true,
-        "ContentSecurityPolicy": "default-src 'self'; script-src 'self' 'unsafe-inline'"
+        "CustomCspDirectives": {
+          "script-src": "'self'"
+        }
       },
       "Cors": {
         "AllowedOrigins": ["https://myapp.example.com"],
