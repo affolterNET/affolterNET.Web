@@ -98,25 +98,32 @@ public class SecurityHeadersMiddleware(
         headers.Append("Content-Security-Policy", csp);
     }
 
-    private static string BuildContentSecurityPolicy(SecurityHeadersOptions options, string nonce)
+    internal static string BuildContentSecurityPolicy(SecurityHeadersOptions options, string nonce)
     {
-        var directives = new List<string>
-        {
-            "default-src 'self'",
-            "object-src 'none'",
-            "base-uri 'self'",
-            "frame-ancestors 'none'"
-        };
+        var directives = new List<string>();
 
-        // Image sources
-        var imgSrc = "'self'";
-        if (options.AllowDataImages)
-            imgSrc += " data:";
-        if (options.AllowBlobImages)
-            imgSrc += " blob:";
-        if (options.AllowedImageSources.Count > 0)
-            imgSrc += " " + string.Join(" ", options.AllowedImageSources);
-        directives.Add($"img-src {imgSrc}");
+        // Default directives (skip if custom directive provided)
+        if (!options.CustomCspDirectives.ContainsKey("default-src"))
+            directives.Add("default-src 'self'");
+        if (!options.CustomCspDirectives.ContainsKey("object-src"))
+            directives.Add("object-src 'none'");
+        if (!options.CustomCspDirectives.ContainsKey("base-uri"))
+            directives.Add("base-uri 'self'");
+        if (!options.CustomCspDirectives.ContainsKey("frame-ancestors"))
+            directives.Add("frame-ancestors 'none'");
+
+        // Image sources (skip if custom directive provided)
+        if (!options.CustomCspDirectives.ContainsKey("img-src"))
+        {
+            var imgSrc = "'self'";
+            if (options.AllowDataImages)
+                imgSrc += " data:";
+            if (options.AllowBlobImages)
+                imgSrc += " blob:";
+            if (options.AllowedImageSources.Count > 0)
+                imgSrc += " " + string.Join(" ", options.AllowedImageSources);
+            directives.Add($"img-src {imgSrc}");
+        }
 
         // Font sources (skip if custom directive provided)
         if (!options.CustomCspDirectives.ContainsKey("font-src"))
@@ -127,19 +134,25 @@ public class SecurityHeadersMiddleware(
             directives.Add($"font-src {fontSrc}");
         }
 
-        // Form actions
-        var formAction = "'self'";
-        if (!string.IsNullOrEmpty(options.IdpHost))
-            formAction += $" {options.IdpHost}";
-        directives.Add($"form-action {formAction}");
+        // Form actions (skip if custom directive provided)
+        if (!options.CustomCspDirectives.ContainsKey("form-action"))
+        {
+            var formAction = "'self'";
+            if (!string.IsNullOrEmpty(options.IdpHost))
+                formAction += $" {options.IdpHost}";
+            directives.Add($"form-action {formAction}");
+        }
 
-        // Script sources with strict-dynamic for trusted script chains
-        var scriptSrc = $"'nonce-{nonce}' 'strict-dynamic'";
-        if (options.AllowedScriptSources.Count > 0)
-            scriptSrc += " " + string.Join(" ", options.AllowedScriptSources);
-        if (!string.IsNullOrEmpty(options.FrontendUrl))
-            scriptSrc += $" {options.FrontendUrl}";
-        directives.Add($"script-src {scriptSrc}");
+        // Script sources with strict-dynamic for trusted script chains (skip if custom directive provided)
+        if (!options.CustomCspDirectives.ContainsKey("script-src"))
+        {
+            var scriptSrc = $"'nonce-{nonce}' 'strict-dynamic'";
+            if (options.AllowedScriptSources.Count > 0)
+                scriptSrc += " " + string.Join(" ", options.AllowedScriptSources);
+            if (!string.IsNullOrEmpty(options.FrontendUrl))
+                scriptSrc += $" {options.FrontendUrl}";
+            directives.Add($"script-src {scriptSrc}");
+        }
 
         // Style sources - always allow unsafe-inline for Vue/React SPA compatibility
         if (!options.CustomCspDirectives.ContainsKey("style-src"))
@@ -152,21 +165,24 @@ public class SecurityHeadersMiddleware(
             directives.Add($"style-src {styleSrc}");
         }
 
-        // Connect sources (for API calls, WebSocket, etc.)
-        var connectSrc = "'self'";
-        if (options.AllowedConnectSources.Count > 0)
-            connectSrc += " " + string.Join(" ", options.AllowedConnectSources);
-        if (!string.IsNullOrEmpty(options.IdpHost))
-            connectSrc += $" {options.IdpHost}";
-        if (!string.IsNullOrEmpty(options.FrontendUrl))
+        // Connect sources (for API calls, WebSocket, etc.) (skip if custom directive provided)
+        if (!options.CustomCspDirectives.ContainsKey("connect-src"))
         {
-            connectSrc += $" {options.FrontendUrl}";
-            // Also add WebSocket variant for Vite HMR
-            var wsUrl = options.FrontendUrl.Replace("http://", "ws://").Replace("https://", "wss://");
-            if (wsUrl != options.FrontendUrl)
-                connectSrc += $" {wsUrl}";
+            var connectSrc = "'self'";
+            if (options.AllowedConnectSources.Count > 0)
+                connectSrc += " " + string.Join(" ", options.AllowedConnectSources);
+            if (!string.IsNullOrEmpty(options.IdpHost))
+                connectSrc += $" {options.IdpHost}";
+            if (!string.IsNullOrEmpty(options.FrontendUrl))
+            {
+                connectSrc += $" {options.FrontendUrl}";
+                // Also add WebSocket variant for Vite HMR
+                var wsUrl = options.FrontendUrl.Replace("http://", "ws://").Replace("https://", "wss://");
+                if (wsUrl != options.FrontendUrl)
+                    connectSrc += $" {wsUrl}";
+            }
+            directives.Add($"connect-src {connectSrc}");
         }
-        directives.Add($"connect-src {connectSrc}");
 
         // Add custom directives
         foreach (var (directive, value) in options.CustomCspDirectives)

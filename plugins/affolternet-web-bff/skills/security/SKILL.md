@@ -19,10 +19,11 @@ For complete reference, see [Library Guide](../../LIBRARY_GUIDE.md).
     "Web": {
       "SecurityHeaders": {
         "EnableHsts": true,
-        "EnableXFrameOptions": true,
-        "EnableXContentTypeOptions": true,
-        "EnableReferrerPolicy": true,
-        "ContentSecurityPolicy": "default-src 'self'; script-src 'self' 'unsafe-inline'"
+        "AllowedConnectSources": ["https://api.example.com"],
+        "AllowedImageSources": ["https://cdn.example.com"],
+        "CustomCspDirectives": {
+          "script-src": "'self'"
+        }
       }
     }
   }
@@ -103,17 +104,25 @@ var options = builder.Services.AddBffServices(isDev, config, opts => {
 
 ## CSP for SPAs
 
+Use `CustomCspDirectives` to override individual CSP directives. Any directive provided here completely replaces the built-in default for that directive.
+
 ```json
 {
   "affolterNET": {
     "Web": {
       "SecurityHeaders": {
-        "ContentSecurityPolicy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.example.com"
+        "CustomCspDirectives": {
+          "script-src": "'self'"
+        },
+        "AllowedConnectSources": ["https://api.example.com"],
+        "AllowedFontSources": ["https://fonts.googleapis.com"]
       }
     }
   }
 }
 ```
+
+**Note:** The default `script-src` uses `nonce` + `strict-dynamic`, which requires server-rendered nonce attributes on `<script>` tags. For static SPAs (Vite/Vue/React builds), override with `"script-src": "'self'"` via `CustomCspDirectives`.
 
 ## Troubleshooting
 
