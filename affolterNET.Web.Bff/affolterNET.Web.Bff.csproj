@@ -8,7 +8,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <PackageId>affolterNET.Web.Bff</PackageId>
-    <Version>0.4.8</Version>
+    <Version>0.4.9</Version>
     <Authors>affolterNET</Authors>
     <Description>BFF authentication components for web applications</Description>
     
