@@ -33,23 +33,26 @@ public class BffController(IBffSessionService sessionService) : ControllerBase
     }
 
     [HttpGet("logout")]
-    [Authorize]
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> LogoutGet([FromQuery] string? returnUrl = "/")
     {
         if (string.IsNullOrEmpty(returnUrl) || !Url.IsLocalUrl(returnUrl))
             returnUrl = "/";
 
-        // First revoke tokens
-        await sessionService.RevokeTokensAsync(HttpContext);
+        if (HttpContext.User.Identity?.IsAuthenticated == true)
+        {
+            // Revoke tokens and sign out via OIDC (full logout)
+            await sessionService.RevokeTokensAsync(HttpContext);
+            return SignOut(
+                new AuthenticationProperties { RedirectUri = returnUrl },
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                OpenIdConnectDefaults.AuthenticationScheme);
+        }
 
-        // Clear local authentication cookies first
+        // User is not authenticated (stale cookie, expired session, etc.)
+        // Clear any remaining cookies and redirect
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-        // Then sign out of OIDC (Keycloak)
-        return SignOut(
-            new AuthenticationProperties { RedirectUri = returnUrl },
-            OpenIdConnectDefaults.AuthenticationScheme);
+        return Redirect(returnUrl);
     }
 
     [HttpGet("logout-app-only")]

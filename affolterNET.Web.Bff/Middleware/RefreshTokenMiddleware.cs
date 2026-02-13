@@ -12,8 +12,7 @@ namespace affolterNET.Web.Bff.Middleware;
 /// </summary>
 public class RefreshTokenMiddleware(
     RequestDelegate next,
-    ILogger<RefreshTokenMiddleware> logger,
-    string oidcScheme = "OpenIdConnect")
+    ILogger<RefreshTokenMiddleware> logger)
 {
     /// <summary>
     /// Processes the HTTP request and refreshes tokens if necessary
@@ -41,11 +40,12 @@ public class RefreshTokenMiddleware(
                 return;
             }
 
-            // Refresh failed (e.g., expired refresh token). Sign the user out to force re-authentication.
-            logger.LogWarning("Token refresh failed, signing user out to force re-authentication");
+            // Refresh failed (e.g., expired refresh token). Clear cookies and continue as unauthenticated.
+            // Don't trigger OIDC signout from middleware — the SPA will detect the 401
+            // and redirect to /bff/account/login.
+            logger.LogWarning("Token refresh failed, clearing session cookie");
             await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            await context.SignOutAsync(oidcScheme);
-            // After sign-out, short-circuit the pipeline to avoid using an invalid principal
+            await next(context);
             return;
         }
  
