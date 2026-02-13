@@ -3,8 +3,11 @@ using affolterNET.Web.Bff.Configuration;
 using affolterNET.Web.Bff.Middleware;
 using affolterNET.Web.Bff.Options;
 using affolterNET.Web.Bff.Services;
+using Azure.Identity;
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -49,6 +52,9 @@ public static class ServiceCollectionExtensions
 
         // Add BFF-specific authentication setup
         services.AddBffAuthenticationInternal(bffOptions);
+
+        // Add Data Protection key persistence
+        services.AddDataProtectionInternal(bffOptions);
 
         // Add BFF supporting services
         services.AddAntiforgeryServicesInternal(bffOptions.AntiForgery);
@@ -162,6 +168,7 @@ public static class ServiceCollectionExtensions
 
                 options.CallbackPath = bffOptions.BffAuth.RedirectUri;
                 options.SignedOutCallbackPath = bffOptions.BffAuth.PostLogoutRedirectUri;
+                options.SignedOutRedirectUri = "/";
 
                 // Map claims
                 options.MapInboundClaims = false;
@@ -253,6 +260,44 @@ public static class ServiceCollectionExtensions
                 : Microsoft.AspNetCore.Http.CookieSecurePolicy.SameAsRequest;
             options.Cookie.Path = bffAntiforgeryOptions.CookiePath;
         });
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds Data Protection key persistence to Azure Blob Storage.
+    /// When disabled (default), ASP.NET Core uses ephemeral in-memory keys.
+    /// </summary>
+    private static IServiceCollection AddDataProtectionInternal(
+        this IServiceCollection services, BffAppOptions bffOptions)
+    {
+        if (!bffOptions.DataProtection.Enabled)
+        {
+            return services;
+        }
+
+        var dp = bffOptions.DataProtection;
+        var dpBuilder = services.AddDataProtection();
+
+        if (!string.IsNullOrWhiteSpace(dp.ApplicationName))
+        {
+            dpBuilder.SetApplicationName(dp.ApplicationName);
+        }
+
+        if (!string.IsNullOrWhiteSpace(dp.StorageAccountName))
+        {
+            // Managed Identity auth
+            var blobUri = new Uri(
+                $"https://{dp.StorageAccountName}.blob.core.windows.net/{dp.ContainerName}/{dp.BlobName}");
+            var credential = new ManagedIdentityCredential(dp.ManagedIdentityClientId);
+            dpBuilder.PersistKeysToAzureBlobStorage(blobUri, credential);
+        }
+        else if (!string.IsNullOrWhiteSpace(dp.ConnectionString))
+        {
+            // Connection string auth (local docker, testing)
+            var blobClient = new BlobClient(dp.ConnectionString, dp.ContainerName, dp.BlobName);
+            dpBuilder.PersistKeysToAzureBlobStorage(blobClient);
+        }
 
         return services;
     }

@@ -27,6 +27,7 @@ public class BffAppOptions : CoreAppOptions
         CookieAuth = config.CreateFromConfig<CookieAuthOptions>(appSettings);
         Rpt = config.CreateFromConfig<RptOptions>(appSettings);
         BffAuth = config.CreateFromConfig<BffAuthOptions>(appSettings);
+        DataProtection = config.CreateFromConfig<DataProtectionOptions>(appSettings);
     }
 
     public BffAuthOptions BffAuth { get; set; }
@@ -43,6 +44,9 @@ public class BffAppOptions : CoreAppOptions
 
     public RptOptions Rpt { get; set; }
     public Action<RptOptions>? ConfigureRpt { get; set; }
+
+    public DataProtectionOptions DataProtection { get; set; }
+    public Action<DataProtectionOptions>? ConfigureDataProtection { get; set; }
     
     /// <summary>
     /// Configuration action for custom middleware - called before endpoint mapping
@@ -62,12 +66,14 @@ public class BffAppOptions : CoreAppOptions
         actions.Add(ConfigureBff);
         actions.Add(ConfigureCookieAuth);
         actions.Add(ConfigureRpt);
+        actions.Add(ConfigureDataProtection);
 
         AntiForgery.RunActions(actions);
         BffAuth.RunActions(actions);
         Bff.RunActions(actions);
         CookieAuth.RunActions(actions);
         Rpt.RunActions(actions);
+        DataProtection.RunActions(actions);
         RunCoreActions(actions);
 
         // Move config values to base types
@@ -86,6 +92,7 @@ public class BffAppOptions : CoreAppOptions
         Bff.ConfigureDi(services);
         CookieAuth.ConfigureDi(services);
         Rpt.ConfigureDi(services);
+        DataProtection.ConfigureDi(services);
 
         // Core configuration
         ConfigureCoreDi(services);
@@ -99,6 +106,7 @@ public class BffAppOptions : CoreAppOptions
         Bff.AddToConfigurationDict(configDict);
         CookieAuth.AddToConfigurationDict(configDict);
         Rpt.AddToConfigurationDict(configDict);
+        DataProtection.AddToConfigurationDict(configDict);
         return configDict;
     }
 
