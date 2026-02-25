@@ -190,10 +190,23 @@ public static class ServiceCollectionExtensions
                         if (path.Equals("/bff/account/login", StringComparison.OrdinalIgnoreCase) ||
                             path.Equals("/bff/account/signup", StringComparison.OrdinalIgnoreCase))
                         {
-                            // Forward prompt parameter (e.g. "create" for signup)
-                            if (context.Properties.Parameters.TryGetValue("prompt", out var promptValue))
+                            // Forward extra OIDC parameters from AuthenticationProperties
+                            foreach (var param in context.Properties.Parameters)
                             {
-                                context.ProtocolMessage.Prompt = promptValue?.ToString();
+                                if (param.Value is string value && !string.IsNullOrEmpty(value))
+                                {
+                                    context.ProtocolMessage.SetParameter(param.Key, value);
+                                }
+                            }
+
+                            // For signup: redirect to Keycloak registration endpoint
+                            // This works reliably with PAR unlike prompt=create
+                            if (path.Equals("/bff/account/signup", StringComparison.OrdinalIgnoreCase))
+                            {
+                                context.ProtocolMessage.IssuerAddress =
+                                    context.ProtocolMessage.IssuerAddress.Replace(
+                                        "/protocol/openid-connect/auth",
+                                        "/protocol/openid-connect/registrations");
                             }
 
                             return Task.CompletedTask;
