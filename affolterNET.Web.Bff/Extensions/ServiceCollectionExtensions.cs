@@ -186,11 +186,16 @@ public static class ServiceCollectionExtensions
                     {
                         var path = context.Request.Path.Value ?? string.Empty;
 
-                        // Allow redirect for explicit login endpoint
-                        // This is called when user clicks "Login" button
-                        if (path.Equals("/bff/account/login", StringComparison.OrdinalIgnoreCase))
+                        // Allow redirect for explicit login and signup endpoints
+                        if (path.Equals("/bff/account/login", StringComparison.OrdinalIgnoreCase) ||
+                            path.Equals("/bff/account/signup", StringComparison.OrdinalIgnoreCase))
                         {
-                            // Allow the redirect to IDP for login flow
+                            // Forward prompt parameter (e.g. "create" for signup)
+                            if (context.Properties.Parameters.TryGetValue("prompt", out var promptValue))
+                            {
+                                context.ProtocolMessage.Prompt = promptValue?.ToString();
+                            }
+
                             return Task.CompletedTask;
                         }
 
