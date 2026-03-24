@@ -28,6 +28,7 @@ public class BffAppOptions : CoreAppOptions
         Rpt = config.CreateFromConfig<RptOptions>(appSettings);
         BffAuth = config.CreateFromConfig<BffAuthOptions>(appSettings);
         DataProtection = config.CreateFromConfig<DataProtectionOptions>(appSettings);
+        JwtBearer = config.CreateFromConfig<BffJwtBearerOptions>(appSettings);
     }
 
     public BffAuthOptions BffAuth { get; set; }
@@ -47,6 +48,9 @@ public class BffAppOptions : CoreAppOptions
 
     public DataProtectionOptions DataProtection { get; set; }
     public Action<DataProtectionOptions>? ConfigureDataProtection { get; set; }
+
+    public BffJwtBearerOptions JwtBearer { get; set; }
+    public Action<BffJwtBearerOptions>? ConfigureJwtBearer { get; set; }
     
     /// <summary>
     /// Configuration action for custom middleware - called before endpoint mapping
@@ -67,6 +71,7 @@ public class BffAppOptions : CoreAppOptions
         actions.Add(ConfigureCookieAuth);
         actions.Add(ConfigureRpt);
         actions.Add(ConfigureDataProtection);
+        actions.Add(ConfigureJwtBearer);
 
         AntiForgery.RunActions(actions);
         BffAuth.RunActions(actions);
@@ -74,6 +79,7 @@ public class BffAppOptions : CoreAppOptions
         CookieAuth.RunActions(actions);
         Rpt.RunActions(actions);
         DataProtection.RunActions(actions);
+        JwtBearer.RunActions(actions);
         RunCoreActions(actions);
 
         // Move config values to base types
@@ -93,6 +99,7 @@ public class BffAppOptions : CoreAppOptions
         CookieAuth.ConfigureDi(services);
         Rpt.ConfigureDi(services);
         DataProtection.ConfigureDi(services);
+        JwtBearer.ConfigureDi(services);
 
         // Core configuration
         ConfigureCoreDi(services);
@@ -107,6 +114,7 @@ public class BffAppOptions : CoreAppOptions
         CookieAuth.AddToConfigurationDict(configDict);
         Rpt.AddToConfigurationDict(configDict);
         DataProtection.AddToConfigurationDict(configDict);
+        JwtBearer.AddToConfigurationDict(configDict);
         return configDict;
     }
 
