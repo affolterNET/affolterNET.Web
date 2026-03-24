@@ -230,6 +230,7 @@ public static class ServiceCollectionExtensions
             {
                 options.Authority = bffOptions.AuthProvider.Authority;
                 options.RequireHttpsMetadata = bffOptions.JwtBearer.RequireHttpsMetadata;
+                options.MapInboundClaims = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateAudience = bffOptions.JwtBearer.ValidateAudience,

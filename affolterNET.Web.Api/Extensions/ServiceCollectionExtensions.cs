@@ -63,6 +63,7 @@ public static class ServiceCollectionExtensions
                 // options.Audience = authProviderOptions.Audience;
                 options.RequireHttpsMetadata = apiOptions.ApiJwtBearer.RequireHttpsMetadata;
                 options.SaveToken = apiOptions.ApiJwtBearer.SaveToken;
+                options.MapInboundClaims = false;
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
