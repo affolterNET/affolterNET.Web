@@ -73,7 +73,8 @@ public static class ServiceCollectionExtensions
                     ValidIssuers = apiOptions.ApiJwtBearer.ValidIssuers.Length > 0 ? apiOptions.ApiJwtBearer.ValidIssuers : null,
                     ValidAudiences =
                         apiOptions.ApiJwtBearer.ValidAudiences.Length > 0 ? apiOptions.ApiJwtBearer.ValidAudiences : null,
-                    ClockSkew = apiOptions.ApiJwtBearer.ClockSkew
+                    ClockSkew = apiOptions.ApiJwtBearer.ClockSkew,
+                    RoleClaimType = "roles",
                 };
             });
 

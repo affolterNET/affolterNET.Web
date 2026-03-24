@@ -6,6 +6,7 @@ using affolterNET.Web.Bff.Services;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
@@ -15,6 +16,7 @@ using affolterNET.Web.Core.Extensions;
 using affolterNET.Web.Core.Models;
 using affolterNET.Web.Core.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace affolterNET.Web.Bff.Extensions;
 
@@ -72,7 +74,7 @@ public static class ServiceCollectionExtensions
         services.AddStandardHealthChecks(bffOptions.AuthProvider.AuthorityBase);
         
         // Add authentication
-        services.AddAuthentication(options =>
+        var authBuilder = services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
@@ -220,6 +222,31 @@ public static class ServiceCollectionExtensions
                     }
                 };
             });
+
+        // Conditionally add JWT Bearer as secondary auth scheme
+        if (bffOptions.JwtBearer.Enabled)
+        {
+            authBuilder.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+            {
+                options.Authority = bffOptions.AuthProvider.Authority;
+                options.RequireHttpsMetadata = bffOptions.JwtBearer.RequireHttpsMetadata;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = bffOptions.JwtBearer.ValidateAudience,
+                    ValidAudiences = bffOptions.JwtBearer.ValidAudiences.Length > 0
+                        ? bffOptions.JwtBearer.ValidAudiences
+                        : [bffOptions.AuthProvider.ClientId],
+                    ValidateIssuer = bffOptions.JwtBearer.ValidateIssuer,
+                    ValidIssuers = bffOptions.JwtBearer.ValidIssuers.Length > 0
+                        ? bffOptions.JwtBearer.ValidIssuers
+                        : null,
+                    ValidateLifetime = bffOptions.JwtBearer.ValidateLifetime,
+                    ValidateIssuerSigningKey = bffOptions.JwtBearer.ValidateIssuerSigningKey,
+                    RoleClaimType = bffOptions.JwtBearer.RoleClaimType,
+                    ClockSkew = bffOptions.JwtBearer.ClockSkew,
+                };
+            });
+        }
 
         // Register BFF-specific services (only services from this library)
         services.AddSingleton<TokenRefreshService>();
