@@ -59,8 +59,7 @@ public static class ServiceCollectionExtensions
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                // options.Authority = authProviderOptions.Authority;
-                // options.Audience = authProviderOptions.Audience;
+                options.Authority = apiOptions.AuthProvider.Authority;
                 options.RequireHttpsMetadata = apiOptions.ApiJwtBearer.RequireHttpsMetadata;
                 options.SaveToken = apiOptions.ApiJwtBearer.SaveToken;
                 options.MapInboundClaims = false;
@@ -72,8 +71,11 @@ public static class ServiceCollectionExtensions
                     ValidateLifetime = apiOptions.ApiJwtBearer.ValidateLifetime,
                     ValidateIssuerSigningKey = apiOptions.ApiJwtBearer.ValidateIssuerSigningKey,
                     ValidIssuers = apiOptions.ApiJwtBearer.ValidIssuers.Length > 0 ? apiOptions.ApiJwtBearer.ValidIssuers : null,
-                    ValidAudiences =
-                        apiOptions.ApiJwtBearer.ValidAudiences.Length > 0 ? apiOptions.ApiJwtBearer.ValidAudiences : null,
+                    ValidAudiences = apiOptions.ApiJwtBearer.ValidAudiences.Length > 0
+                        ? apiOptions.ApiJwtBearer.ValidAudiences
+                        : apiOptions.ApiJwtBearer.ValidateAudience && !string.IsNullOrEmpty(apiOptions.AuthProvider.ClientId)
+                            ? [apiOptions.AuthProvider.ClientId]
+                            : null,
                     ClockSkew = apiOptions.ApiJwtBearer.ClockSkew,
                     RoleClaimType = "roles",
                 };

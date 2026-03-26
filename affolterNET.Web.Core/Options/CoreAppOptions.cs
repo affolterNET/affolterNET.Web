@@ -20,6 +20,7 @@ public abstract class CoreAppOptions
         Swagger = config.CreateFromConfig<SwaggerOptions>(appSettings);
         Cors = config.CreateFromConfig<AffolterNetCorsOptions>(appSettings);
         Cloud = config.CreateFromConfig<CloudOptions>(appSettings);
+        RequestLogging = config.CreateFromConfig<RequestLoggingOptions>(appSettings);
         IsDev = appSettings.IsDev;
     }
     
@@ -54,6 +55,9 @@ public abstract class CoreAppOptions
     public CloudOptions Cloud { get; set; }
     public Action<CloudOptions>? ConfigureCloud { get; set; }
 
+    public RequestLoggingOptions RequestLogging { get; set; }
+    public Action<RequestLoggingOptions>? ConfigureRequestLogging { get; set; }
+
     protected void RunCoreActions(ConfigureActions? actions = null)
     {
         actions ??= new ConfigureActions(); // create if null
@@ -65,7 +69,8 @@ public abstract class CoreAppOptions
         actions.Add(ConfigureSwagger);
         actions.Add(ConfigureCors);
         actions.Add(ConfigureCloud);
-        
+        actions.Add(ConfigureRequestLogging);
+
         AuthProvider.RunActions(actions);
         Oidc.RunActions(actions);
         OidcClaimTypes.RunActions(actions);
@@ -74,6 +79,7 @@ public abstract class CoreAppOptions
         Swagger.RunActions(actions);
         Cors.RunActions(actions);
         Cloud.RunActions(actions);
+        RequestLogging.RunActions(actions);
     }
 
     protected void ConfigureCoreDi(IServiceCollection services)
@@ -86,6 +92,7 @@ public abstract class CoreAppOptions
         Swagger.ConfigureDi(services);
         Cors.ConfigureDi(services);
         Cloud.ConfigureDi(services);
+        RequestLogging.ConfigureDi(services);
     }
 
     protected abstract Dictionary<string, object> GetConfigs();
@@ -107,6 +114,7 @@ public abstract class CoreAppOptions
         Swagger.AddToConfigurationDict(dict);
         Cors.AddToConfigurationDict(dict);
         Cloud.AddToConfigurationDict(dict);
+        RequestLogging.AddToConfigurationDict(dict);
 
         var options = new JsonSerializerOptions
         {
