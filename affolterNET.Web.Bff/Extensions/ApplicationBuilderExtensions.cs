@@ -35,6 +35,12 @@ public static class ApplicationBuilderExtensions
             app.UseMiddleware<SecurityHeadersMiddleware>();
         }
 
+        // 2.5. REQUEST LOGGING (opt-in, skips excluded paths like /health/)
+        if (bffOptions.RequestLogging.Enabled)
+        {
+            app.UseMiddleware<RequestLoggingMiddleware>();
+        }
+
         // 3. HTTPS REDIRECTION
         if (bffOptions.Bff.EnableHttpsRedirection)
         {

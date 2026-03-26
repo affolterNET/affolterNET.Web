@@ -17,6 +17,12 @@ public static class ApplicationBuilderExtensions
             app.UseMiddleware<SecurityHeadersMiddleware>();
         }
         
+        // 1.5. REQUEST LOGGING (opt-in, skips excluded paths like /health/)
+        if (apiOptions.RequestLogging.Enabled)
+        {
+            app.UseMiddleware<RequestLoggingMiddleware>();
+        }
+
         // 2. API DOCUMENTATION (Swagger/OpenAPI) - After security, before routing
         if (apiOptions.Swagger.EnableSwagger)
         {
