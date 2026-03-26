@@ -71,8 +71,11 @@ public static class ServiceCollectionExtensions
                     ValidateLifetime = apiOptions.ApiJwtBearer.ValidateLifetime,
                     ValidateIssuerSigningKey = apiOptions.ApiJwtBearer.ValidateIssuerSigningKey,
                     ValidIssuers = apiOptions.ApiJwtBearer.ValidIssuers.Length > 0 ? apiOptions.ApiJwtBearer.ValidIssuers : null,
-                    ValidAudiences =
-                        apiOptions.ApiJwtBearer.ValidAudiences.Length > 0 ? apiOptions.ApiJwtBearer.ValidAudiences : null,
+                    ValidAudiences = apiOptions.ApiJwtBearer.ValidAudiences.Length > 0
+                        ? apiOptions.ApiJwtBearer.ValidAudiences
+                        : apiOptions.ApiJwtBearer.ValidateAudience && !string.IsNullOrEmpty(apiOptions.AuthProvider.ClientId)
+                            ? [apiOptions.AuthProvider.ClientId]
+                            : null,
                     ClockSkew = apiOptions.ApiJwtBearer.ClockSkew,
                     RoleClaimType = "roles",
                 };
