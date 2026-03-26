@@ -59,8 +59,7 @@ public static class ServiceCollectionExtensions
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                // options.Authority = authProviderOptions.Authority;
-                // options.Audience = authProviderOptions.Audience;
+                options.Authority = apiOptions.AuthProvider.Authority;
                 options.RequireHttpsMetadata = apiOptions.ApiJwtBearer.RequireHttpsMetadata;
                 options.SaveToken = apiOptions.ApiJwtBearer.SaveToken;
                 options.MapInboundClaims = false;
