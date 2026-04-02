@@ -3,6 +3,8 @@ using affolterNET.Web.Core.Configuration;
 using affolterNET.Web.Core.Extensions;
 using affolterNET.Web.Core.Options;
 using affolterNET.Web.Core.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,7 +53,21 @@ public class BffAppOptions : CoreAppOptions
 
     public BffJwtBearerOptions JwtBearer { get; set; }
     public Action<BffJwtBearerOptions>? ConfigureJwtBearer { get; set; }
-    
+
+    /// <summary>
+    /// Optional callback to register additional authentication schemes
+    /// (e.g., BasicAuth, API key) on the AuthenticationBuilder.
+    /// Called after Cookie, OIDC, and JWT Bearer schemes are registered.
+    /// </summary>
+    public Action<AuthenticationBuilder>? ConfigureAdditionalAuthSchemes { get; set; }
+
+    /// <summary>
+    /// Optional callback to register authorization policies.
+    /// The library does not register any default policies — each project
+    /// defines its own role-based policies here.
+    /// </summary>
+    public Action<AuthorizationOptions>? ConfigureAuthorizationPolicies { get; set; }
+
     /// <summary>
     /// Configuration action for custom middleware - called before endpoint mapping
     /// </summary>

@@ -78,20 +78,13 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Adds authorization policies and custom authorization handlers
     /// </summary>
-    public static IServiceCollection AddAuthorizationPolicies(this IServiceCollection services)
+    public static IServiceCollection AddAuthorizationPolicies(
+        this IServiceCollection services,
+        Action<AuthorizationOptions>? configurePolicies = null)
     {
-        // Add authorization and custom policy provider/handler
         services.AddAuthorization(options =>
         {
-            // Add predefined role-based policies
-            options.AddPolicy("AdminOnly", policy =>
-                policy.RequireRole("admin"));
-
-            options.AddPolicy("UserOrAdmin", policy =>
-                policy.RequireRole("user", "admin"));
-
-            options.AddPolicy("CustomerOrAdmin", policy =>
-                policy.RequireRole("Customer", "admin"));
+            configurePolicies?.Invoke(options);
         });
 
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();

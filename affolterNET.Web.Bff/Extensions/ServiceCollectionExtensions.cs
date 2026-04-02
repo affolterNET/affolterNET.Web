@@ -44,7 +44,7 @@ public static class ServiceCollectionExtensions
         services.AddCoreServices()
             .AddKeycloakIntegration(bffOptions)
             .AddRptServices()
-            .AddAuthorizationPolicies();
+            .AddAuthorizationPolicies(bffOptions.ConfigureAuthorizationPolicies);
 
         // Swagger
         services.AddSwagger(bffOptions);
@@ -246,8 +246,30 @@ public static class ServiceCollectionExtensions
                     RoleClaimType = bffOptions.JwtBearer.RoleClaimType,
                     ClockSkew = bffOptions.JwtBearer.ClockSkew,
                 };
+
+                // azp validation for Keycloak client credentials tokens
+                var validAzps = bffOptions.JwtBearer.ValidAuthorizedParties;
+                if (validAzps.Length > 0)
+                {
+                    options.TokenValidationParameters.ValidateAudience = false;
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnTokenValidated = context =>
+                        {
+                            var azp = context.Principal?.FindFirst("azp")?.Value;
+                            if (azp == null || !validAzps.Contains(azp))
+                            {
+                                context.Fail("Invalid authorized party (azp)");
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
+                }
             });
         }
+
+        // Allow consumer to register additional auth schemes (e.g., BasicAuth)
+        bffOptions.ConfigureAdditionalAuthSchemes?.Invoke(authBuilder);
 
         // Register BFF-specific services (only services from this library)
         services.AddSingleton<TokenRefreshService>();
