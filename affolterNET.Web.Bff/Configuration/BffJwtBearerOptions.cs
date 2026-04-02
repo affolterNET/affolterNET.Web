@@ -28,6 +28,7 @@ public class BffJwtBearerOptions : IConfigurableOptions<BffJwtBearerOptions>
         target.ClockSkew = ClockSkew;
         target.ValidAudiences = ValidAudiences;
         target.ValidIssuers = ValidIssuers;
+        target.ValidAuthorizedParties = ValidAuthorizedParties;
         target.RoleClaimType = RoleClaimType;
     }
 
@@ -46,6 +47,7 @@ public class BffJwtBearerOptions : IConfigurableOptions<BffJwtBearerOptions>
         ClockSkew = TimeSpan.FromMinutes(5);
         ValidAudiences = [];
         ValidIssuers = [];
+        ValidAuthorizedParties = [];
         RoleClaimType = "roles";
     }
 
@@ -97,6 +99,13 @@ public class BffJwtBearerOptions : IConfigurableOptions<BffJwtBearerOptions>
     /// Falls back to AuthProvider.Authority if empty.
     /// </summary>
     public string[] ValidIssuers { get; set; }
+
+    /// <summary>
+    /// Valid authorized parties (azp claim) for token validation.
+    /// Common for Keycloak client credentials tokens where aud="account".
+    /// When set, audience validation is automatically disabled and azp is validated instead.
+    /// </summary>
+    public string[] ValidAuthorizedParties { get; set; }
 
     /// <summary>
     /// Claim type used for role-based authorization.
