@@ -46,25 +46,45 @@ public static class HealthCheckEndpointExtensions
                 [HealthStatus.Degraded] = StatusCodes.Status200OK,
                 [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable
             },
-            ResponseWriter = async (context, report) =>
+            ResponseWriter = WriteJsonReport,
+        }).WithOrder(HealthCheckRouteOrder);
+
+        // Detail endpoint: runs ALL registered checks (including "detail"-tagged
+        // external-dependency checks like Keycloak). Always returns 200 so it's
+        // not a load-bearing probe — purely a diagnostic for ops. Reverse-proxy
+        // exposure of this path should be gated by auth in the consuming app.
+        endpoints.MapHealthChecks("/health/detail", new HealthCheckOptions
+        {
+            Predicate = _ => true,
+            AllowCachingResponses = false,
+            ResultStatusCodes =
             {
-                context.Response.ContentType = "application/json";
-                var result = new
-                {
-                    status = report.Status.ToString(),
-                    totalDuration = report.TotalDuration.TotalMilliseconds,
-                    checks = report.Entries.Select(e => new
-                    {
-                        name = e.Key,
-                        status = e.Value.Status.ToString(),
-                        description = e.Value.Description,
-                        duration = e.Value.Duration.TotalMilliseconds
-                    })
-                };
-                await context.Response.WriteAsJsonAsync(result);
-            }
+                [HealthStatus.Healthy] = StatusCodes.Status200OK,
+                [HealthStatus.Degraded] = StatusCodes.Status200OK,
+                [HealthStatus.Unhealthy] = StatusCodes.Status200OK,
+            },
+            ResponseWriter = WriteJsonReport,
         }).WithOrder(HealthCheckRouteOrder);
 
         return endpoints;
+    }
+
+    private static async Task WriteJsonReport(HttpContext context, HealthReport report)
+    {
+        context.Response.ContentType = "application/json";
+        var result = new
+        {
+            status = report.Status.ToString(),
+            totalDuration = report.TotalDuration.TotalMilliseconds,
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description,
+                duration = e.Value.Duration.TotalMilliseconds,
+                tags = e.Value.Tags,
+            })
+        };
+        await context.Response.WriteAsJsonAsync(result);
     }
 }

@@ -206,10 +206,16 @@ public static class ServiceCollectionExtensions
             .AddCheck<StartupHealthCheck>("startup", tags: new[] { "startup" })
             .AddCheck("self", () => HealthCheckResult.Healthy("OK"));
 
-        // keycloak health check only if URL provided
+        // keycloak health check only if URL provided.
+        // Tagged "detail" only — NOT "ready" or "startup". An unreachable
+        // Keycloak must not take this container out of rotation; auth failures
+        // surface to the user as 401, not as a probe-induced 503. The warm-up
+        // service below wakes Keycloak's JVM in parallel with our boot so the
+        // first auth flow doesn't pay the cold-start cost.
         if (!string.IsNullOrEmpty(keycloakBaseUrl))
         {
-            health.AddCheck<KeycloakHealthCheck>("keycloak", tags: new[] { "ready", "startup" });
+            health.AddCheck<KeycloakHealthCheck>("keycloak", tags: new[] { "detail" });
+            services.AddHostedService<KeycloakWarmupService>();
         }
 
         return services;
