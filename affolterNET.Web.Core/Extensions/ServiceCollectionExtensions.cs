@@ -12,6 +12,7 @@ using Azure.Identity;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using NETCore.Keycloak.Client.HttpClients.Abstraction;
 using NETCore.Keycloak.Client.HttpClients.Implementation;
@@ -185,6 +186,24 @@ public static class ServiceCollectionExtensions
         {
             policy.SetPreflightMaxAge(TimeSpan.FromSeconds(affolterNetCorsOptions.MaxAge));
         }
+    }
+
+    /// <summary>
+    /// Registers a background service that emits a configurable heartbeat log line at a
+    /// fixed interval. The log line includes <see cref="HeartbeatOptions.Pattern"/>, which
+    /// external monitors (e.g. Azure Log Search alerts) grep for to detect stuck containers.
+    /// No-op when disabled.
+    /// </summary>
+    public static IServiceCollection AddHeartbeat(this IServiceCollection services,
+        HeartbeatOptions heartbeat)
+    {
+        if (!heartbeat.Enabled)
+        {
+            return services;
+        }
+
+        services.AddHostedService<HeartbeatBackgroundService>();
+        return services;
     }
 
     /// <summary>
