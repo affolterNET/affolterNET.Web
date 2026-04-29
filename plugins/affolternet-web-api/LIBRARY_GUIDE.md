@@ -64,6 +64,7 @@ affolterNET:Web:PermissionCache   → PermissionCacheOptions
 affolterNET:Web:SecurityHeaders   → SecurityHeadersOptions
 affolterNET:Web:Swagger           → SwaggerOptions
 affolterNET:Web:Cors              → AffolterNetCorsOptions
+affolterNET:Web:Heartbeat         → HeartbeatOptions (liveness log line — see heartbeat skill)
 ```
 
 ## Middleware Pipeline Order
