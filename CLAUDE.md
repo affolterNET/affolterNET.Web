@@ -194,6 +194,7 @@ affolterNET:Web:BffOptions        → BffOptions
 affolterNET:Web:Auth:BffAuth      → BffAuthOptions
 affolterNET:Web:Auth:CookieAuth   → CookieAuthOptions
 affolterNET:Web:Auth:AntiForgery  → BffAntiforgeryOptions
+affolterNET:Web:Heartbeat         → HeartbeatOptions
 affolterNET:ReverseProxy          → YARP configuration
 ```
 

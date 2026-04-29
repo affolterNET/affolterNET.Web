@@ -55,6 +55,9 @@ public static class ServiceCollectionExtensions
         // Add Data Protection key persistence
         services.AddAzureBlobDataProtection(bffOptions.DataProtection);
 
+        // Add background heartbeat for external liveness monitoring
+        services.AddHeartbeat(bffOptions.Heartbeat);
+
         // Add BFF supporting services
         services.AddAntiforgeryServicesInternal(bffOptions.AntiForgery);
         services.AddReverseProxyInternal(configuration);

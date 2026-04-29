@@ -21,6 +21,7 @@ public abstract class CoreAppOptions
         Cors = config.CreateFromConfig<AffolterNetCorsOptions>(appSettings);
         Cloud = config.CreateFromConfig<CloudOptions>(appSettings);
         RequestLogging = config.CreateFromConfig<RequestLoggingOptions>(appSettings);
+        Heartbeat = config.CreateFromConfig<HeartbeatOptions>(appSettings);
         IsDev = appSettings.IsDev;
     }
     
@@ -58,6 +59,9 @@ public abstract class CoreAppOptions
     public RequestLoggingOptions RequestLogging { get; set; }
     public Action<RequestLoggingOptions>? ConfigureRequestLogging { get; set; }
 
+    public HeartbeatOptions Heartbeat { get; set; }
+    public Action<HeartbeatOptions>? ConfigureHeartbeat { get; set; }
+
     protected void RunCoreActions(ConfigureActions? actions = null)
     {
         actions ??= new ConfigureActions(); // create if null
@@ -70,6 +74,7 @@ public abstract class CoreAppOptions
         actions.Add(ConfigureCors);
         actions.Add(ConfigureCloud);
         actions.Add(ConfigureRequestLogging);
+        actions.Add(ConfigureHeartbeat);
 
         AuthProvider.RunActions(actions);
         Oidc.RunActions(actions);
@@ -80,6 +85,7 @@ public abstract class CoreAppOptions
         Cors.RunActions(actions);
         Cloud.RunActions(actions);
         RequestLogging.RunActions(actions);
+        Heartbeat.RunActions(actions);
     }
 
     protected void ConfigureCoreDi(IServiceCollection services)
@@ -93,6 +99,7 @@ public abstract class CoreAppOptions
         Cors.ConfigureDi(services);
         Cloud.ConfigureDi(services);
         RequestLogging.ConfigureDi(services);
+        Heartbeat.ConfigureDi(services);
     }
 
     protected abstract Dictionary<string, object> GetConfigs();
@@ -115,6 +122,7 @@ public abstract class CoreAppOptions
         Cors.AddToConfigurationDict(dict);
         Cloud.AddToConfigurationDict(dict);
         RequestLogging.AddToConfigurationDict(dict);
+        Heartbeat.AddToConfigurationDict(dict);
 
         var options = new JsonSerializerOptions
         {
