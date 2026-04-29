@@ -1,12 +1,15 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.DataProtection;
 using affolterNET.Web.Core.Configuration;
 using affolterNET.Web.Core.Authorization;
 using affolterNET.Web.Core.HealthChecks;
 using affolterNET.Web.Core.Options;
 using affolterNET.Web.Core.Services;
 using affolterNET.Web.Core.Swagger;
+using Azure.Identity;
+using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
@@ -182,6 +185,43 @@ public static class ServiceCollectionExtensions
         {
             policy.SetPreflightMaxAge(TimeSpan.FromSeconds(affolterNetCorsOptions.MaxAge));
         }
+    }
+
+    /// <summary>
+    /// Persists ASP.NET Core Data Protection keys to Azure Blob Storage so they survive
+    /// container restarts and are shared across replicas. No-op when disabled.
+    /// </summary>
+    public static IServiceCollection AddAzureBlobDataProtection(this IServiceCollection services,
+        Configuration.DataProtectionOptions dp)
+    {
+        if (!dp.Enabled)
+        {
+            return services;
+        }
+
+        var dpBuilder = services.AddDataProtection();
+
+        if (!string.IsNullOrWhiteSpace(dp.ApplicationName))
+        {
+            dpBuilder.SetApplicationName(dp.ApplicationName);
+        }
+
+        if (!string.IsNullOrWhiteSpace(dp.StorageAccountName))
+        {
+            // Managed Identity auth
+            var blobUri = new Uri(
+                $"https://{dp.StorageAccountName}.blob.core.windows.net/{dp.ContainerName}/{dp.BlobName}");
+            var credential = new ManagedIdentityCredential(dp.ManagedIdentityClientId);
+            dpBuilder.PersistKeysToAzureBlobStorage(blobUri, credential);
+        }
+        else if (!string.IsNullOrWhiteSpace(dp.ConnectionString))
+        {
+            // Connection string auth (local docker, testing)
+            var blobClient = new BlobClient(dp.ConnectionString, dp.ContainerName, dp.BlobName);
+            dpBuilder.PersistKeysToAzureBlobStorage(blobClient);
+        }
+
+        return services;
     }
 
     public static IServiceCollection AddStandardHealthChecks(this IServiceCollection services,

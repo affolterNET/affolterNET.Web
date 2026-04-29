@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>affolterNET.Web.Core</PackageId>
-    <Version>0.7.7</Version>
+    <Version>0.7.8</Version>
     <Authors>affolterNET</Authors>
     <Description>Core authentication and authorization components for web applications</Description>
     
@@ -34,6 +34,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Extensions.AspNetCore.DataProtection.Blobs" Version="1.4.0" />
+    <PackageReference Include="Azure.Identity" Version="1.13.2" />
     <PackageReference Include="Keycloak.NETCore.Client" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.9" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.9" />
