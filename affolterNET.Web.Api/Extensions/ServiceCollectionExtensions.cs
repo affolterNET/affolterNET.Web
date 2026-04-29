@@ -46,6 +46,9 @@ public static class ServiceCollectionExtensions
         // Add API-specific authentication setup
         services.AddApiAuthenticationInternal(apiOptions);
 
+        // Add Data Protection key persistence (no-op when DataProtection.Enabled = false)
+        services.AddAzureBlobDataProtection(apiOptions.DataProtection);
+
         return apiOptions;
     }
 

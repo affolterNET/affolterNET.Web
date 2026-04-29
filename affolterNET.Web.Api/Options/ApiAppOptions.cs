@@ -1,4 +1,5 @@
 using affolterNET.Web.Api.Configuration;
+using affolterNET.Web.Core.Configuration;
 using affolterNET.Web.Core.Extensions;
 using affolterNET.Web.Core.Options;
 using affolterNET.Web.Core.Models;
@@ -13,16 +14,20 @@ public class ApiAppOptions : CoreAppOptions
     public ApiAppOptions(AppSettings appSettings, IConfiguration config) : base(appSettings, config)
     {
         ApiJwtBearer = ApiJwtBearerOptions.CreateDefaults(appSettings);
+        DataProtection = config.CreateFromConfig<DataProtectionOptions>(appSettings);
     }
 
     public ApiJwtBearerOptions ApiJwtBearer { get; set; }
     public Action<ApiJwtBearerOptions>? ConfigureApiJwtBearer { get; set; }
-    
+
+    public DataProtectionOptions DataProtection { get; set; }
+    public Action<DataProtectionOptions>? ConfigureDataProtection { get; set; }
+
     /// <summary>
     /// Configuration action for custom middleware - called before endpoint mapping
     /// </summary>
     public Action<IApplicationBuilder>? ConfigureBeforeEndpointsCustomMiddleware { get; set; }
-    
+
     /// <summary>
     /// Configuration action for custom middleware - called after routing
     /// </summary>
@@ -32,10 +37,14 @@ public class ApiAppOptions : CoreAppOptions
     {
         var actions = new ConfigureActions();
         actions.Add(ConfigureApiJwtBearer);
-        
+        actions.Add(ConfigureDataProtection);
+
         ApiJwtBearer.RunActions(actions);
-        
+        DataProtection.RunActions(actions);
+
         RunCoreActions();
+
+        DataProtection.ConfigureDi(services);
         ConfigureCoreDi(services);
     }
 
@@ -48,7 +57,8 @@ public class ApiAppOptions : CoreAppOptions
     {
         var configDict = new Dictionary<string, object>();
         ApiJwtBearer.AddToConfigurationDict(configDict);
-        
+        DataProtection.AddToConfigurationDict(configDict);
+
         return configDict;
     }
 }
