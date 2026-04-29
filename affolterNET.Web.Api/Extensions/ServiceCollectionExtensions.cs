@@ -49,6 +49,9 @@ public static class ServiceCollectionExtensions
         // Add Data Protection key persistence (no-op when DataProtection.Enabled = false)
         services.AddAzureBlobDataProtection(apiOptions.DataProtection);
 
+        // Add background heartbeat for external liveness monitoring
+        services.AddHeartbeat(apiOptions.Heartbeat);
+
         return apiOptions;
     }
 
