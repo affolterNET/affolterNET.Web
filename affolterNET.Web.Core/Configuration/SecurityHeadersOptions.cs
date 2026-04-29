@@ -25,8 +25,6 @@ public class SecurityHeadersOptions: IConfigurableOptions<SecurityHeadersOptions
         target.AllowedConnectSources = new List<string>(AllowedConnectSources);
         target.AllowedScriptSources = new List<string>(AllowedScriptSources);
         target.AllowedStyleSources = new List<string>(AllowedStyleSources);
-        target.AllowedStyleHashes = new List<string>(AllowedStyleHashes);
-        target.AllowInlineStyles = AllowInlineStyles;
         target.AllowedImageSources = new List<string>(AllowedImageSources);
         target.AllowDataImages = AllowDataImages;
         target.AllowBlobImages = AllowBlobImages;
@@ -65,11 +63,6 @@ public class SecurityHeadersOptions: IConfigurableOptions<SecurityHeadersOptions
         AllowedConnectSources = [];
         AllowedScriptSources = [];
         AllowedStyleSources = [];
-        AllowedStyleHashes = [
-            "'sha256-RL3ie0nH+Lzz2YNqQN83mnU0J1ot4QL7b99vMdIX99w='", // Swagger inline styles
-            "'sha256-adCHRDdBmbx4dWYaKj8Jau0AjBYObEHM9Q3PajAHatg='" // an-loader component inline styles
-        ];
-        AllowInlineStyles = settings.IsDev; // Allow unsafe-inline styles only in development
         AllowedImageSources = [];
         AllowDataImages = true; // Allow data URLs for base64 images (commonly used)
         AllowBlobImages = true; // Allow blob images in development and production
@@ -107,7 +100,6 @@ public class SecurityHeadersOptions: IConfigurableOptions<SecurityHeadersOptions
             
             // Add Vue/Vite dev server support
             AllowedScriptSources.Add("'unsafe-eval'"); // Required for Vue dev server hot reload
-            // Note: 'unsafe-inline' for styles is now controlled by AllowInlineStyles property
         }
 
         FrontendUrl = string.Empty;
@@ -137,19 +129,6 @@ public class SecurityHeadersOptions: IConfigurableOptions<SecurityHeadersOptions
     /// Additional allowed hosts for style-src directive
     /// </summary>
     public List<string> AllowedStyleSources { get; set; }
-    
-    /// <summary>
-    /// SHA-256 hashes for specific inline styles that should be allowed.
-    /// Format: 'sha256-HASH' (e.g., 'sha256-RL3ie0nH+Lzz2YNqQN83mnU0J1ot4QL7b99vMdIX99w=')
-    /// </summary>
-    [Obsolete("Style hashes are no longer used. The CSP now uses 'unsafe-inline' for style-src to support Vue/React SPAs.")]
-    public List<string> AllowedStyleHashes { get; set; }
-
-    /// <summary>
-    /// Whether to allow 'unsafe-inline' styles. No longer used - inline styles are always allowed for SPA compatibility.
-    /// </summary>
-    [Obsolete("Inline styles are now always allowed for Vue/React SPA compatibility. This property has no effect.")]
-    public bool AllowInlineStyles { get; set; }
     
     /// <summary>
     /// Additional allowed hosts for img-src directive
