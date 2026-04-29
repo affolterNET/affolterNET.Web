@@ -1,8 +1,7 @@
-using affolterNET.Web.Core.Configuration;
 using affolterNET.Web.Core.Models;
 using affolterNET.Web.Core.Options;
 
-namespace affolterNET.Web.Bff.Configuration;
+namespace affolterNET.Web.Core.Configuration;
 
 /// <summary>
 /// Data Protection key persistence configuration options.
