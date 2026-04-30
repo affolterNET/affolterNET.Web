@@ -144,7 +144,20 @@ public class TokenRefreshService(
         var kcResponse = await keycloakClient.Auth.RefreshAccessTokenAsync(_realm, _clientCredentials, refreshToken);
         if (kcResponse.IsError)
         {
-            logger.LogError("Refreshing tokens failed: {Error}", kcResponse.ErrorMessage);
+            // invalid_grant ("Session not active" / "Token is not active" / "Refresh token expired")
+            // is the routine outcome when a user's Keycloak session has been idle past
+            // SSO Session Idle / Refresh Token Lifespan. The middleware handles it correctly
+            // (clear cookie → 401 → SPA redirects to login); logging at Error here would
+            // trigger alerts for every routine session expiry.
+            var msg = kcResponse.ErrorMessage ?? string.Empty;
+            if (msg.Contains("invalid_grant", StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogInformation("Refresh token rejected by Keycloak (session likely expired): {Error}", msg);
+            }
+            else
+            {
+                logger.LogError("Refreshing tokens failed: {Error}", msg);
+            }
             return null;
         }
 
