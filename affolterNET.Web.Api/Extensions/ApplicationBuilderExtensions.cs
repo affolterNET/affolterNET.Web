@@ -52,7 +52,10 @@ public static class ApplicationBuilderExtensions
         if (apiOptions.ApiJwtBearer.AuthMode != AuthenticationMode.None)
         {
             app.UseAuthentication();
-            app.UseMiddleware<RptMiddleware>();
+            if (apiOptions.EnableRptTokens)
+            {
+                app.UseMiddleware<RptMiddleware>();
+            }
             app.UseAuthorization();
         }
         

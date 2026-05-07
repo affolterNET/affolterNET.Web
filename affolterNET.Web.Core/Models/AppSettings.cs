@@ -15,9 +15,7 @@ public class AppSettings
     /// </summary>
     public AuthenticationMode AuthMode { get; set; }
 
-    public bool IsBff { get; set; }
-
-    public AppSettings() : this(false, AuthenticationMode.None, true)
+    public AppSettings() : this(false, AuthenticationMode.None)
     {
     }
 
@@ -26,11 +24,9 @@ public class AppSettings
     /// </summary>
     /// <param name="isDev">Whether running in development mode</param>
     /// <param name="authMode">Authentication mode</param>
-    /// <param name="isBff"></param>
-    public AppSettings(bool isDev, AuthenticationMode authMode, bool isBff)
+    public AppSettings(bool isDev, AuthenticationMode authMode)
     {
         IsDev = isDev;
         AuthMode = authMode;
-        IsBff = isBff;
     }
 }

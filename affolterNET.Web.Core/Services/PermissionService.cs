@@ -27,6 +27,16 @@ public class PermissionService(
 
     public async Task<IReadOnlyList<Permission>> GetUserPermissionsAsync(string userId, string accessToken, CancellationToken cancellationToken = default)
     {
+        // Master gate: when RPT/permissions are turned off via PermissionCacheOptions.Enabled
+        // (forwarded from BffOptions.EnableRptTokens / ApiAuthOptions.EnableRptTokens),
+        // skip the Keycloak round-trip entirely. Avoids the
+        // "Client does not support permissions" warning on every login for consumers
+        // that use role-based-only authorization.
+        if (!_permissionCacheConfig.Enabled)
+        {
+            return Array.Empty<Permission>();
+        }
+
         if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(accessToken))
         {
             return Array.Empty<Permission>();
