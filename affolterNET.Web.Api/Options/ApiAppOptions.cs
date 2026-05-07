@@ -24,6 +24,15 @@ public class ApiAppOptions : CoreAppOptions
     public Action<DataProtectionOptions>? ConfigureDataProtection { get; set; }
 
     /// <summary>
+    /// When true, register <c>RptMiddleware</c> in the request pipeline AND let
+    /// <c>ApiClaimsEnrichmentService</c> request RPT tokens during claims enrichment.
+    /// Set to false when the Keycloak client does not have the UMA Authorization
+    /// feature enabled (= role-based-only auth on JWT). Default: true.
+    /// Mirror of <c>BffOptions.EnableRptTokens</c>.
+    /// </summary>
+    public bool EnableRptTokens { get; set; } = true;
+
+    /// <summary>
     /// Configuration action for custom middleware - called before endpoint mapping
     /// </summary>
     public Action<IApplicationBuilder>? ConfigureBeforeEndpointsCustomMiddleware { get; set; }
@@ -43,6 +52,13 @@ public class ApiAppOptions : CoreAppOptions
         DataProtection.RunActions(actions);
 
         RunCoreActions();
+
+        // Single source of truth: EnableRptTokens decides whether the RPT-based
+        // permission flow runs at all. PermissionCacheOptions.Enabled is the gate
+        // read by PermissionService — propagate it here so a consumer that sets
+        // EnableRptTokens = false silences both RptMiddleware and the
+        // claims-enrichment RPT fetch with one knob.
+        PermissionCache.Enabled = EnableRptTokens;
 
         DataProtection.ConfigureDi(services);
         ConfigureCoreDi(services);
