@@ -21,6 +21,7 @@ public class PermissionCacheOptions: IConfigurableOptions<PermissionCacheOptions
 
     public void CopyTo(PermissionCacheOptions target)
     {
+        target.Enabled = Enabled;
         target.DefaultExpiration = DefaultExpiration;
         target.MaxCacheSize = MaxCacheSize;
         target.PermissionCacheExpiration = PermissionCacheExpiration;
@@ -43,6 +44,19 @@ public class PermissionCacheOptions: IConfigurableOptions<PermissionCacheOptions
         PermissionCacheExpiration = settings.IsDev ? TimeSpan.FromMinutes(3) : TimeSpan.FromMinutes(10); // Shorter permission cache in development
         MaxCacheSize = settings.IsDev ? 100 : 1000; // Smaller cache size in development
     }
+
+    /// <summary>
+    /// Master switch for the RPT-based permission flow. When false,
+    /// <see cref="Services.PermissionService.GetUserPermissionsAsync"/> short-circuits
+    /// and returns an empty permission set without calling Keycloak. Set this to false
+    /// for consumers whose Keycloak client does not have the UMA Authorization feature
+    /// enabled (= role-based-only auth). Default: true (preserves prior behavior).
+    /// </summary>
+    /// <remarks>
+    /// Wired automatically by <c>AddBffServices</c> from <c>BffOptions.EnableRptTokens</c>
+    /// and by <c>AddApiServices</c> from <c>ApiAuthOptions.EnableRptTokens</c>.
+    /// </remarks>
+    public bool Enabled { get; set; } = true;
 
     /// <summary>
     /// Default cache expiration time

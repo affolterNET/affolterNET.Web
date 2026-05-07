@@ -98,6 +98,13 @@ public class BffAppOptions : CoreAppOptions
         JwtBearer.RunActions(actions);
         RunCoreActions(actions);
 
+        // Single source of truth: BffOptions.EnableRptTokens decides whether the
+        // RPT-based permission flow runs at all. PermissionCacheOptions.Enabled is
+        // the gate read by PermissionService — propagate it here so a consumer that
+        // sets bffOpts.EnableRptTokens = false silences both RptMiddleware and the
+        // claims-enrichment RPT fetch with one knob.
+        PermissionCache.Enabled = Bff.EnableRptTokens;
+
         // Move config values to base types
         var baseActions = new ConfigureActions();
         Action<SecurityHeadersOptions> configureUrl = sho =>
