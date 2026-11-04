@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>affolterNET.Web.Core</PackageId>
-    <Version>0.9.9</Version>
+    <Version>0.9.10</Version>
     <Authors>affolterNET</Authors>
     <Description>Core authentication and authorization components for web applications</Description>
     
@@ -37,6 +37,8 @@
     <PackageReference Include="Azure.Extensions.AspNetCore.DataProtection.Blobs" Version="1.4.0" />
     <PackageReference Include="Azure.Identity" Version="1.13.2" />
     <PackageReference Include="Keycloak.NETCore.Client" Version="1.0.2" />
+    <!-- Override the older DataProtection dependency from DataProtection.Blobs 1.4.0. -->
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="8.0.26" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.9" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.9" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.9" />
@@ -47,11 +49,8 @@
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
-    <!-- Pins a patched version over the vulnerable 8.0.2 that DataProtection.Blobs 1.4.0
-         pulls in transitively (8 high advisories, e.g. GHSA-37gx-xxp4-5rgx). Bumping Blobs
-         to 1.5.x instead is not viable on net9.0: it requires .NET 10 abstractions (NU1605).
-         Drop this pin once Blobs ships a net9-compatible patched chain. -->
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="9.0.18" />
+    <!-- Keep the patched XML requirement in the shared package for all consumers. -->
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.13" />
     <PackageReference Include="System.Text.Json" Version="9.0.9" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
   </ItemGroup>
