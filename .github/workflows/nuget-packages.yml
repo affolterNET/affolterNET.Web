@@ -135,6 +135,9 @@ jobs:
   pack-and-publish:
     needs: [build-and-test]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # Push the release tag
+      id-token: write   # GitHub identity token for NuGet Trusted Publishing
     if: |
       needs.build-and-test.outputs.should_publish == 'true' || 
       (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_to_nuget == 'true')
@@ -224,6 +227,13 @@ jobs:
         name: nuget-symbol-packages
         path: ./packages/*.snupkg
 
+    # Match the trusted publishing setup used by affolterNET.CRM / AzureStorage.
+    - name: NuGet login (Trusted Publishing)
+      uses: NuGet/login@v1
+      id: nuget-login
+      with:
+        user: ${{ secrets.NUGET_USER }}
+
     - name: Publish to NuGet.org
       if: |
         needs.build-and-test.outputs.should_publish == 'true' ||
@@ -241,12 +251,10 @@ jobs:
           
           echo "Publishing $package"
           dotnet nuget push "$package" \
-            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
         done
-      env:
-        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 
     - name: Create and push git tag
       if: |

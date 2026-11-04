@@ -93,10 +93,14 @@ The repository includes GitHub Actions workflows for:
 - **Package Publishing**: Automatic NuGet publishing on releases
 - **Version Management**: Automatic versioning with preview builds
 
-To publish to NuGet.org:
-1. Add `NUGET_API_KEY` to repository secrets
-2. Create a release with version tag (e.g., `v1.0.0`)
-3. Packages will be automatically published
+Publishing uses [NuGet Trusted Publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing), matching the setup used by affolterNET.CRM / AzureStorage. No long-lived NuGet API key is required.
+
+One-time setup:
+1. Sign in to [NuGet Trusted Publishing](https://www.nuget.org/account/trustedpublishing) using the account used for AzureStorage. Select the owner of the Web packages and add a GitHub policy with repository owner `affolterNET`, repository `affolterNET.Web`, and workflow file `nuget-packages.yml` (filename only). Leave environment empty: this workflow does not use a GitHub environment. If scope selection is shown, allow new versions for `affolterNET.Web.*`.
+2. Add the GitHub Actions repository secret `NUGET_USER` with the same NuGet profile username used by CRM (not an email address or API key).
+3. After the first successful trusted publication, remove the obsolete `NUGET_API_KEY` repository secret and revoke the old key on NuGet if still active.
+
+Pushes to `develop` increment the package patch version and run the build and tests. Merge `develop` into `main` through a pull request to publish all four packages and create the release tag. To retry publishing after account setup, run **Build and Publish NuGet Packages** on `main` with **Publish to NuGet.org** enabled; rerunning an old workflow run uses its original workflow revision.
 
 This library provides flexible authentication and authorization modes for ASP.NET Core applications with YARP reverse proxy integration.
 
